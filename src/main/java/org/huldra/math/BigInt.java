@@ -30,11 +30,9 @@ Never space after for or if or akin, it looks ugly.
 Bracketless loops may be on one line. For nested bracketless loops each should be indented on a new line.
 */
 
-import java.math.BigInteger;
 import java.util.*;
 import java.io.*;
 import java.util.concurrent.*;
-//import java.math.BigInteger;
 
 /**
 * <p>A class for arbitrary-precision integer arithmetic purely written in Java.</p>
