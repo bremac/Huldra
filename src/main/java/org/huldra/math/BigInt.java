@@ -1,3 +1,4 @@
+// -*- c-basic-offset: 8; indent-tabs-mode: t; -*-
 package org.huldra.math;
 
 /*
@@ -32,6 +33,7 @@ Bracketless loops may be on one line. For nested bracketless loops each should b
 
 import java.util.*;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.concurrent.*;
 
 /**
@@ -248,6 +250,42 @@ public class BigInt extends Number implements Comparable<BigInt>
 	public BigInt copy()
 	{
 		return new BigInt(sign, Arrays.copyOf(dig,len), len);
+	}
+	/**
+	* Returns a ByteBuffer containing the two's-complement representation of this number.
+	* The byte array will be in big-endian byte-order: the most significant byte is at
+	* the buffer's {@code position}, which may be non-zero. The remaining elements in the
+	* buffer will contain the minimum number of bytes required to represent this number,
+	* including at least one sign bit.
+	*
+	* @return a byte buffer containing the two's-complement representation of this number
+	* @complexity O(n)
+	*/
+	public ByteBuffer toByteBuffer() {
+		ByteBuffer buf;
+		int hi = dig[len-1];
+		if (isZero()) {
+			buf = ByteBuffer.allocate(1);
+		} else if(sign>0) {
+			boolean padded = hi<0;
+			buf = ByteBuffer.allocate(len*4 + (padded ? 1 : 0));
+			if (padded) buf.put((byte)0);
+			for(int i = len-1; i>=0; i--) buf.putInt(dig[i]);
+			int bitPos = Integer.numberOfLeadingZeros(hi)-1;
+			buf.position(padded ? 0 : (bitPos>>3));
+		} else {
+			boolean padded = hi-1<0;
+			buf = ByteBuffer.allocate(len*4 + (padded ? 1 : 0));
+			if (padded) buf.put((byte)0xFF);
+			long dif = 1L << 32;
+			for(int i = 0, j = buf.capacity() - 4; i<len; i++, j-=4) {
+				dif = (~dig[i]&mask) + (dif >>> 32);
+				buf.putInt(j, (int)dif);
+			}
+			int bitPos = Integer.numberOfLeadingZeros(~(int)dif)-1;
+			buf.position(padded ? 0 : (bitPos>>3));
+		}
+		return buf;
 	}
 	/**
 	* Assigns the given number to this BigInt object.
