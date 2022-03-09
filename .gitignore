@@ -1,3 +1,6 @@
+# Maven compilation output
+target/
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
